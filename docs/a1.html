@@ -13,8 +13,9 @@
     <div style="width: 500px; margin: 0 auto; text-align: center;">
       <h2>Schematic</h2>
       <img src="a1_sch.jpg" width="500">
-      <p>Resistor Calculation:</p>
-      <img src="a1_cal.jpg" width="500">
+      <p>Resistor Calculation: </p>
+      <img src="a1_cal.jpg" width="500" alt="Resistor Calculation" />
+      <p>For a 5V supply and a white LED (V_LED ≈ 3.3V, I = 20mA), <br>R = (5 − 3.3) / 0.02 = 85Ω. So I used 100Ω resistors for each LED.</p>
     </div>
     <div style="width: 700px; margin: 0 auto; text-align: center;">
       <h2>Circuit</h2>
@@ -202,15 +203,17 @@
     </div>
     <div>
       <h2 style="text-align: center;">Additional Questions</h2>
-      <h3>Q1: Voltage Drop LEDs Over Time</h3>
+      <h3>Q1: Voltage Drop of the LEDs Over Time</h3>
       <img src="a1_vt.jpg" width="800" />
+      <p>
+        The graphs show the voltage across LEDs 1~3 and LEDs 4~6 over time.
+      </p>
       <br>
       <h3>Q2: How many LEDs could you blink independently with your Arduino? How much current would that draw?</h3>
       <p>
-        The Arduino Uno has 14 digital I/O pins, and each pin can source a maximum of 40mA and total maximum current of 150mA. 
-        However, the recommended current per pin is 20mA to avoid damaging the microcontroller. 
-        Therefore, if each LED draws 20mA, then 150mA ÷ 20mA = 7.5 LEDs.
-        So I could blink about 7 LEDs independently at 20mA each.
+        The ATmega328P datasheet lists a 200mA absolute maximum for total current and a 40mA maximum per pin.
+        However, the recommended maximum total current is 150mA, and the current per pin is 20mA. 
+        150mA ÷ 20mA = 7.5, so about 7 LEDs can be blinked independently and draw about 140mA in total.
       </p>
       <br>
       <h3>Q3: How fast do you need to blink your LEDs until you no longer can tell that they are blinking?</h3>
@@ -221,11 +224,14 @@
         <li>7ms — cannot tell, looks steady</li>
       </ul>
       <p>
-        My threshold is around 8.5ms delay.
+        My threshold is around 8.5ms delay, which means about 58.8 blinks per second. 
       </p>
       <br>
-      <p><b>AI Statement:</b> I used AI to help me do the repeated short comments within the codes, 
-        and taught me how to put my codes in the wireframe. I think it helped me save time and focus on the more important aspects of the project.</p>
+      <p><b>AI Statement:</b> 
+        I used AI to help me write the repeated short comments in the code, 
+        and to teach me how to put my code into the HTML page. 
+        It helped me save time and focus on the more important parts of the project.
+      </p>
       <br>
     </div>
   </body>
