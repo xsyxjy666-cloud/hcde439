@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Shuyi's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1 style="text-align: center;">Shuyi's Assignment 3: Input Output!</h1>
+    <div style="width: 80%; margin: 0 auto; text-align: center;">
+      <h2>Schematic</h2>
+      <img src="a3_sch.jpg" width="80%" id="a3_sch">
+      <div class="resistor-calculation">
+      <h3>Resistor Calculation:</h3>
+        <p>My circuit uses a photoresistor as the variable resistor in a voltage divider, and a small DC fan as the output device.
+          The fan is controlled by an S8050 NPN transistor, with a 1N4007 diode for protection. 
+          For the photoresistor voltage divider, I used a 10kΩ fixed resistor. The photoresistor resistance ranges from about 1kΩ (bright light) to about 100kΩ (dark).
+          To find the best fixed resistor value, I used the geometric mean:
+          <br><b>R_fixed = √(R_low × R_high) = √(1000Ω × 100000Ω) = √100000000 = 10000Ω = 10kΩ. </b>
+          <br>So I used a 10kΩ resistor. This keeps Vout roughly centered over the full light range.
+          <br>
+          <br>The voltage divider output Vout is:
+          <br><b>Vout = 5V × R_fixed / (R_photoresistor + R_fixed).</b>
+          <br>- In bright light (R_photo ≈ 1kΩ): Vout = 5 × 10000 / 11000 ≈ 4.55V → analogRead ≈ 930
+          <br>- In darkness (R_photo ≈ 100kΩ): Vout = 5 × 10000 / 110000 ≈ 0.45V → analogRead ≈ 92
+          So the analogRead value ranges from about 92 (dark) to 930 (bright).
+          <br><br>
+        </p>
+        <h3>Transistor Base Resistor Calculation:</h3>
+        <p>
+          I used a 1kΩ resistor between Arduino pin 9 and the transistor base.
+          The base current is:
+          <br><b>I_B = (5V − 0.7V) / 1000Ω ≈ 4.3mA.</b>
+          <br>This is well below the 40mA per-pin limit. It is also enough to fully turn on the S8050 transistor, 
+          which can handle up to 700mA collector current — much more than the small fan needs (about 100–200mA).
+        </p>
+      </div>
+    </div>
+    <div style="width: 700px; margin: 0 auto; text-align: center;">
+      <h2>Circuit</h2>
+      <img src="a3_s1.png" width="80%" />
+      <img src="a3_s2.png" width="80%" />
+    </div>
+    <div>
+      <h2  style="text-align: center;">Firmware</h2>
+      <pre><code>
+        // Analog pin A0 connected to the photoresistor voltage divider
+        int sensorPin = A0;
+        // Digital PWM pin 9 connected to the transistor base (controls fan speed)
+        int fanPin = 9;
+
+        // Setup runs once when the Arduino powers on
+        void setup() {
+          // Start serial communication at 9600 baud
+          Serial.begin(9600);
+          // Set the fan control pin as an output
+          pinMode(fanPin, OUTPUT);
+        }
+
+        // Loop runs over and over forever
+        void loop() {
+          // Read the photoresistor value from A0 (range 0 to 1023)
+          int sensorValue = analogRead(sensorPin);
+          // Map the 0-1023 sensor value to a 0-255 PWM value for the fan
+          int fanSpeed = map(sensorValue, 0, 1023, 0, 255);
+
+          // Write the PWM value to the fan pin to control fan speed
+          analogWrite(fanPin, fanSpeed);
+
+          // Print the label "sensor: " to the serial monitor
+          Serial.print("sensor: ");
+          // Print the raw photoresistor reading
+          Serial.print(sensorValue);
+          // Print a tab and the label "Fan speed: "
+          Serial.print("\t Fan speed: ");
+          // Print the mapped fan speed value and move to a new line
+          Serial.println(fanSpeed);
+
+          // Check if the sensor value is greater than 600 (bright condition)
+          if (sensorValue > 600) {
+            // Print a message indicating bright light and fast fan
+            Serial.println("Bright - fan fast");
+          } else {
+            // Print a message indicating dark condition and slow fan
+            Serial.println("Dark - fan slow");
+          }
+
+          // Wait 50 ms before the next reading for stability
+          delay(50);
+        }
+      </code></pre>
+    </div>
+    <div style="width: 500px; margin: 0 auto; text-align: center;">
+      <h2>Circuit's Operation</h2>
+      <img src="a3.gif" width="500" />
+      <br>
+    </div>
+    <div>
+      <h2 style="text-align: center;">Additional Questions</h2>
+      <h3>Q1: In your voltage divider, can the variable resistor be either R1 or R2 or does it need to be 
+        one or the other? Justify your answer with example calculations.</h3>
+      <p>
+        <b>The graph shows the PWM voltage across the LED (3.3V) for three analogWrite values.</b>
+      </p>
+      
+      <br>
+      <h3>Q2: Draw a graph where the x-axis is time and the y-axis is voltage. Plot the voltage at V-measure (where your pin is reading the voltage) of your voltage divider of your shared gif/video.</h3>
+      <img src="a3_vt.jpg" width="800" />
+      <p>
+        
+      </p>
+      <br>
+      <h3>Q3: AnalogWrite and analogRead are respectively 8-bit and 10-bit values. Imagine you had 10-bit PWM and a 16-bit analog-to-digital converter instead. How would this change your map() code? Explain your answer.</h3>
+      <p>
+        
+      </p>
+      <br>
+    </div>
+  </body>
+</html>
