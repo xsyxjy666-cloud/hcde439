@@ -14,28 +14,32 @@
       <h2>Schematic</h2>
       <img src="a3_sch.jpg" width="80%" id="a3_sch">
       <div class="resistor-calculation">
-      <h3>Resistor Calculation:</h3>
+      <h3>Photoresistor Base Resistor Calculation:</h3>
         <p>My circuit uses a photoresistor as the variable resistor in a voltage divider, and a small DC fan as the output device.
           The fan is controlled by an S8050 NPN transistor, with a 1N4007 diode for protection. 
           For the photoresistor voltage divider, I used a 10kΩ fixed resistor. The photoresistor resistance ranges from about 1kΩ (bright light) to about 100kΩ (dark).
           To find the best fixed resistor value, I used the geometric mean:
-          <br><b>R_fixed = √(R_low × R_high) = √(1000Ω × 100000Ω) = √100000000 = 10000Ω = 10kΩ. </b>
-          <br>So I used a 10kΩ resistor. This keeps Vout roughly centered over the full light range.
-          <br>
-          <br>The voltage divider output Vout is:
-          <br><b>Vout = 5V × R_fixed / (R_photoresistor + R_fixed).</b>
-          <br>- In bright light (R_photo ≈ 1kΩ): Vout = 5 × 10000 / 11000 ≈ 4.55V → analogRead ≈ 930
-          <br>- In darkness (R_photo ≈ 100kΩ): Vout = 5 × 10000 / 110000 ≈ 0.45V → analogRead ≈ 92
-          So the analogRead value ranges from about 92 (dark) to 930 (bright).
+          <b>R_fixed = √(R_low × R_high) = √(1000Ω × 100000Ω) = √100000000 = 10000Ω = 10kΩ. </b>
+          So I used a 10kΩ resistor. This keeps Vout roughly centered over the full light range.
+          <br><br>
+          <h4>Voltage Divider (Vout) calculation:</h4>
+          Vout = 5V × R_fixed / (R_photoresistor + R_fixed).
+          <ul>
+            <li>In bright light (R_photoresistor ≈ 1kΩ): <br><b>Vout = 5 × 10000 / 11000 ≈ 4.55V → analogRead ≈ 930</b></li>
+            <li>In darkness (R_photoresistor ≈ 100kΩ): <br><b>Vout = 5 × 10000 / 110000 ≈ 0.45V → analogRead ≈ 92</b></li>
+          </ul>
+          So the THEORETICAL analogRead value ranges from about 92 (dark) to 930 (bright).
+          However, the ACTUAL analogRead value ranges from about 47 (dark) to 1015 (bright).
+          This may be due to real-world factors. For example, my specific sensor may have a different resistance range, 
+          the Arduino 5V supply is not perfectly exact, and the working conditions such as temperature can be different from ideal conditions.
           <br><br>
         </p>
         <h3>Transistor Base Resistor Calculation:</h3>
         <p>
           I used a 1kΩ resistor between Arduino pin 9 and the transistor base.
-          The base current is:
-          <br><b>I_B = (5V − 0.7V) / 1000Ω ≈ 4.3mA.</b>
-          <br>This is well below the 40mA per-pin limit. It is also enough to fully turn on the S8050 transistor, 
-          which can handle up to 700mA collector current — much more than the small fan needs (about 100–200mA).
+          So, the base current is:
+          <b>I_B = (5V − 0.7V) / 1000Ω ≈ 4.3mA</b>,
+          which is well below the 40mA per-pin limit.
         </p>
       </div>
     </div>
@@ -83,6 +87,7 @@
           if (sensorValue > 600) {
             // Print a message indicating bright light and fast fan
             Serial.println("Bright - fan fast");
+          // Check if the sensor value is not greater than 600 (dark condition)
           } else {
             // Print a message indicating dark condition and slow fan
             Serial.println("Dark - fan slow");
@@ -93,29 +98,94 @@
         }
       </code></pre>
     </div>
-    <div style="width: 500px; margin: 0 auto; text-align: center;">
+    <div style="width: 80%; margin: 0 auto; text-align: center;">
       <h2>Circuit's Operation</h2>
       <img src="a3.gif" width="500" />
-      <br>
+      <div class="resistor-calculation">
+        When the photoresistor is exposed to bright light, the sensor reading increases and the fan spins faster.
+        <br>When the photoresistor is covered (dark), the sensor reading decreases and the fan slows down.
+        <br><br>
+        <b>Serial monitor example output:</b>
+        <br>sensor: 829	 Fan speed: 206
+        <br>Bright - fan fast
+        <br>sensor: 60	 Fan speed: 14
+        <br>Dark - fan slow
+      </div>
+      <img src="a3_2.gif" width="500" />
     </div>
     <div>
       <h2 style="text-align: center;">Additional Questions</h2>
       <h3>Q1: In your voltage divider, can the variable resistor be either R1 or R2 or does it need to be 
         one or the other? Justify your answer with example calculations.</h3>
       <p>
-        <b>The graph shows the PWM voltage across the LED (3.3V) for three analogWrite values.</b>
+        In my voltage divider, the variable resistor can be either R1 or R2.
       </p>
+      <div class="resistor-calculation">
+        <p>
+          <b>Example calculation: sensor as R1</b><br>
+          Vout = Vin × R2 / (R1 + R2)<br>
+          <b>R2 = 10kΩ</b> fixed, R1 (sensor) goes from 1kΩ to 100kΩ:<br>
+          <ul>
+            <li>when <b>R1 = 1kΩ:</b> Vout = 5 × 10000 / 11000 = 4.55V</li>
+            <li>when <b>R1 = 100kΩ:</b> Vout = 5 × 10000 / 110000 = 0.45V</li>
+          </ul>
+          If light increases, R1 decreases, Vout increases.<br>
+        </p>
+      </div>
+
+      <div class="resistor-calculation">
+        <p>
+          <b>Example calculation: sensor as R2</b><br>
+          Vout = Vin × R2 / (R1 + R2).<br>
+          <b>R1 = 10kΩ</b> fixed, R2 (sensor) goes from 1kΩ to 100kΩ:<br>
+          <ul>
+            <li>when <b>R2 = 1kΩ:</b> Vout = 5 × 1000 / 11000 = 0.45V</li>
+            <li>when <b>R2 = 100kΩ:</b> Vout = 5 × 100000 / 110000 = 4.55V</li>
+          </ul>
+          If light increases, R2 decreases, so Vout decreases.<br>
+        </p>
+        
+      </div>
+      <p>
+        Both work. I chose the sensor as R1 so that bright light gives a higher analogRead value, which is more intuitive.
+      </p>
+      
       
       <br>
       <h3>Q2: Draw a graph where the x-axis is time and the y-axis is voltage. Plot the voltage at V-measure (where your pin is reading the voltage) of your voltage divider of your shared gif/video.</h3>
       <img src="a3_vt.jpg" width="800" />
       <p>
-        
+        The graph shows one 10-second loop of the V-measure voltage during the GIF:
       </p>
+      <ul>
+        <li><b>0–1s:</b> Hand covering the sensor, voltage is low (~0.25V).</li>
+        <li><b>2–4s:</b> Hand removed, voltage rises (~1.0V to ~3.0V).</li>
+        <li><b>5s:</b> Flashlight shining, voltage reaches its peak (~4.05V).</li>
+        <li><b>6–9s:</b> Flashlight removed, voltage drops back down (~3.5V to ~1.0V).</li>
+        <li><b>10s:</b> Hand covers the sensor again, returning to ~0.3V, and the loop repeats.</li>
+      </ul>
       <br>
       <h3>Q3: AnalogWrite and analogRead are respectively 8-bit and 10-bit values. Imagine you had 10-bit PWM and a 16-bit analog-to-digital converter instead. How would this change your map() code? Explain your answer.</h3>
       <p>
-        
+        Currently:
+      </p>
+      <ul>
+        <li>analogRead is 10-bit: 0–1023</li>
+        <li>analogWrite is 8-bit: 0–255</li>
+      </ul>
+      <p>
+        If ADC were 16-bit and PWM were 10-bit:
+      </p>
+      <ul>
+        <li>analogRead range: 0–65535 (2^16 − 1)</li>
+        <li>analogWrite range: 0–1023 (2^10 − 1)</li>
+      </ul>
+      <p>
+        Thus, the map() code would change from
+        <b>map(sensorValue, 0, 1023, 0, 255)</b>
+        to
+        <b>map(sensorValue, 0, 65535, 0, 1023)</b>.
+        This means the ADC can detect 65536 different levels, and the PWM resolution would increase from 256 steps to 1024 steps, which could make the fan speed smoother and more precise.
       </p>
       <br>
     </div>

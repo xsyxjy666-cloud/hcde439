@@ -15,11 +15,9 @@ picture,
 video,
 canvas,
 svg {
-  
+  margin: 0 auto;
   display: block;
   max-width: 100%;
-  align-items: center;
-  
 }
 
 body {
