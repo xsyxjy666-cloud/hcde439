@@ -17,11 +17,13 @@
       <h3>Schematic Description:</h3>
         <p>
           This circuit uses a capacitive touch sensor as the input and a servo motor as the output.
-          <ul>
-            <li><b>Input:</b> A 1MΩ resistor connects Pin 2 (send) and Pin 4 (receive). A conductive object is attached to Pin 4. When a human touches the conductor, it changes the capacitance, which the Arduino can detect.</li>
-            <li><b>Output:</b> The servo motor's PWM signal pin is connected to Pin 9 (a PWM-capable pin). The servo's power and ground are connected to the Arduino's 5V and GND pins.</li>
-          </ul>
         </p>
+
+        <ul>
+          <li><b>Input:</b> A 1MΩ resistor connects Pin 2 (send) and Pin 4 (receive). A conductive object is attached to Pin 4. When a human touches the conductor, it changes the capacitance, which the Arduino can detect.</li>
+          <li><b>Output:</b> The servo motor's PWM signal pin is connected to Pin 9 (a PWM-capable pin). The servo's power and ground are connected to the Arduino's 5V and GND pins.</li>
+        </ul>
+        
     </div>
     <br>
     <div style="width: 700px; margin: 0 auto; text-align: center;">
@@ -33,7 +35,7 @@
     <div style="text-align: left;">
       <h2  style="text-align: center;">Firmware</h2>
       <pre><code>
-        // Derived from CapitiveSensor Library Demo Sketch by Paul Badger 2008
+        // Derived from CapacitiveSensor Library Demo Sketch by Paul Badger 2008
         #include &lt;CapacitiveSensor.h&gt;
         // Derived from Servo library to control the servo motor
         #include &lt;Servo.h&gt;
@@ -123,8 +125,7 @@
     <br>
     <div style="text-align: left;">
       <h2 style="text-align: center;">Additional Questions</h2>
-      <h3>
-        Q1: Say you are using a servo motor you attach to pin 9. In your loop() you have the following code: <br>
+      <h3>Q1: Say you are using a servo motor you attach to pin 9. In your loop() you have the following code: </h3>
         <pre><code>
           void loop() {
           for (pos = 0; pos <= 180; pos += 1) {
@@ -133,7 +134,7 @@
             }
           }
         </code></pre>
-        Draw a graph with the x-axis as time and the y-axis as voltage at pin 9 with respect to ground.</h3>
+        <h3>Draw a graph with the x-axis as time and the y-axis as voltage at pin 9 with respect to ground.</h3>
       <img src="a4_vt.jpg" width="800" />
       
       <br>
@@ -142,12 +143,12 @@
         We can use a median filter to remove outliers from the readings.
       </p>
       <pre><code>
-        // assuming a sort function exists
         int readings[WINDOW];
 
         void loop() {
           readings[index] = analogRead(A0);
           sorted = sort(readings);
+          // assuming a sort function exists
           filtered_val = sorted[WINDOW/2];
         }
       </code></pre>
