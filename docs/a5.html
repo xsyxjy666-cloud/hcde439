@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+    <title>Shuyi's HCDE 439 Physical Computing Page!</title>
+
+    <link href="style.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1 style="text-align: center;">Shuyi's Assignment 5: High(er) voltage and transistors!</h1>
+    <div style="width: 80%; margin: 0 auto; text-align: center;">
+      <h2>Schematic</h2>
+      <img src="a5_sch.jpg" width="80%" id="a4_sch">
+      <div class="resistor-calculation">
+      <h3>Schematic Explanation:</h3>
+        <ul>
+          <li><b>Input:</b> A 1MΩ resistor connects Pin 2 (send) and Pin 4 (receive). A conductive object is attached to Pin 4. When a human touches the conductor, it changes the capacitance, which the Arduino can detect.</li>
+          <li><b>Output:</b> The LED strip's positive terminal is connected to the 12V external power supply, and its negative terminal is connected to the MOSFET's Drain pin. The MOSFET's Gate is connected to Arduino Pin 9 (a PWM-capable pin) to receive the control signal.</li>
+        </ul>
+        <p>*<i>The 12V power supply ground, the MOSFET Source, and the Arduino GND are all connected together (Common Ground) to ensure the control signal works properly.</i></p>
+        
+        <ul>
+          <li><b>Expected Voltages (LED Strip):</b> The MOSFET acts as a switch. When Pin 9 outputs a PWM signal, the MOSFET's Gate opens, the MOSFET rapidly switches on and off, controlling the average voltage across the LED strip from 0V to 12V.</li>
+          <li><b>Expected Currents (LED Strip):</b> The LED light strip draws about 1.5A at maximum brightness. The MOSFET has a maximum drain current of 47A, which is more than sufficient for the LED strip's requirements. Because MOSFET is voltage-controlled, the Gate draws almost 0mA, so the Arduino pin 9 is safe.</li>
+        </ul>
+        <p>*<i>
+          When I showed my schematic to AI, it suggested adding a gate resistor to limit the current and protect the Arduino pin.
+          However, when I was looking at the lecture slides, I noticed that the NPN transistor had a base resistor, but the MOSFET in the LED strip demo did not have a gate resistor. 
+          I asked the AI about this discrepancy to confirm if the slide was correct. The AI explained that MOSFETs are voltage-controlled and draw almost no steady current at the gate, which is why the resistor is often omitted in demos, but adding one is safer in practice to prevent transient current spikes. 
+          Since the lecture slides did not include it, I decided to follow the slide's schematic exactly, but I used this conversation to deepen my understanding of the difference between current-controlled and voltage-controlled components.
+        </i></p>
+
+        <ul>
+          <li><b>Expected Voltages (Capacitive Sensor):</b> When the conductor is not touched, the sensor outputs 0V. When touched, the voltage increases from 0V up to 5V. The voltage decreases when the conductor is released.</li>
+          <li><b>Expected Currents (Capacitive Sensor):</b> The capacitive sensor draws a very small amount of current. The 1MΩ resistor limits the current to a safe level for the Arduino pin.</li>
+        </ul>
+    </div>
+    <br>
+    <div style="width: 700px; margin: 0 auto; text-align: center;">
+      <h2>Circuit</h2>
+      <img src="a5_s1.jpg" width="80%" />
+      <img src="a5_s2.png" width="80%" />
+      <img src="a5_s3.png" width="80%" />
+    </div>
+    <br>
+    <div style="text-align: left;">
+      <h2  style="text-align: center;">Firmware</h2>
+      <pre><code>
+        // Derived from CapacitiveSense Library Demo Sketch by Paul Badger 2008
+        #include &lt;CapacitiveSensor.h&gt;
+
+        // Set up the Capacitive sensor with send pin 2 and receive pin 4
+        CapacitiveSensor cs_2_4 = CapacitiveSensor(2, 4);
+
+        // Define pin 9 connected to the MOSFET Gate
+        int mosfetPin = 9;
+        // Variable to track if the sensor is currently being touched
+        bool isTouched = false;
+        // Variable to store the current brightness level (0-255)
+        int brightness = 0;
+        // Variable to store the time when the touch started
+        int touchStartTime = 0;
+
+        // Setup function runs once at the beginning
+        void setup() {
+          // Begin Serial communication to print values
+          Serial.begin(9600);
+          // turn off autocalibrate on channel 1
+          cs_2_4.set_CS_AutocaL_Millis(0xFFFFFFFF);
+          // Set the MOSFET pin as an output
+          pinMode(mosfetPin, OUTPUT);
+          // Initial state output 0V, so the LED strip is off
+          analogWrite(mosfetPin, 0);
+        }
+
+        // Loop function runs repeatedly forever
+        void loop() {
+          // Read the smoothed capacitive sensor value
+          int sensorValue = cs_2_4.capacitiveSensor(30);
+
+          // Detect the moment the finger touches down, if reading is above threshold and it was not touched before
+          if (sensorValue > 1000 && isTouched == false) {
+            // Mark as touched
+            isTouched = true;
+            // Record the exact time the touch started in milliseconds
+            touchStartTime = millis();
+          }
+
+          // While the finger is holding down, if reading is still above threshold and is currently touched
+          if (sensorValue > 1000 && isTouched == true) {
+            // Check if the brightness has not reached the maximum
+            if (brightness < 255) {
+              // Increase the brightness by 2
+              brightness = brightness + 2;
+              // Constrain the brightness value to stay within 0 and 255
+              brightness = constrain(brightness, 0, 255);
+              // Send the PWM signal to the MOSFET to update the LED brightness
+              analogWrite(mosfetPin, brightness);
+              // Wait 15 milliseconds to control how fast the light gets brighter
+              delay(15);
+            }
+          }
+
+          // Detect the moment the finger releases, if reading drops below threshold and it was touched before
+          if (sensorValue < 1000 && isTouched == true) {
+            // Reset the touched state
+            isTouched = false;
+            
+            // Calculate how long the finger was held down
+            int pressDuration = millis() - touchStartTime;
+            
+            // If pressed for less than 200ms (a short tap)
+            if (pressDuration < 200) {
+              // Turn off the LED strip
+              brightness = 0;
+              // Send 0 to the MOSFET to shut it off
+              analogWrite(mosfetPin, 0);
+            }
+          }
+        }
+      </code></pre>
+      <div class="resistor-calculation">
+        <h3>Value Justification:</h3>
+        <ul>
+          <li><b>int sensorValue = cs_2_4.capacitiveSensor(30):</b><br>Call the function to get the capacitive sensor value with 30 samples, which helps to reduce noise without sacrificing too much response time.</li>
+          <li><b>if sensorValue > 1000 / if sensorValue < 1000:</b><br>I tested the sensor readings and found that when the sensor is not touched, the value is around 20, and when touched, it jumps to 1000+.<img src="a4_2.gif" width="500" /></li>
+          <li><b>if (pressDuration < 200):</b><br>I tested the press duration and found that 200ms is a right threshold of a short press for turning the LED off.</li>
+          
+        </ul>
+      </div>
+    </div>
+    <br>
+    <div style="width: 80%; margin: 0 auto; text-align: center;">
+      <h2>Circuit's Operation</h2>
+      <img src="a5.gif" width="500" />
+    </div>
+    <br>
+    <div style="text-align: left;">
+      <h2 style="text-align: center;">Additional Questions</h2>
+      <h3>Q1: These are the datasheets for the n-mosfet transistor: DMT6009LCT, IRLZ44N, P30N06LE. Read the text on your mosfet to see which one you have. For your mosfet, what is the absolute maximum amount of current between pins 2 and 3?</h3>
+        <p>I have the IRLZ44N MOSFET, and its absolute maximum current between pins 2 and 3 is 47A.</p>
+      
+      <br>
+      <h3>Q2: Draw a schematic for a circuit with using at least your arduino, a DC motor, and a flyback diode. Find parts with datasheets you could use for each of these schematic components.</h3>
+      <img src="a5_vt.jpg" width="800" />
+      <p>*<i>AI mentioned that for a 250mA motor, it is better to use an external 5V power supply rather than the Arduino's 5V pin to avoid overloading the Arduino regulator. 
+        While an external 5V supply is safer for high-current loads, the class demo used the Arduino 5V directly, so I followed the demo setup for this schematic.</i></p>
+      <br>
+      <h3>Q3: Here is the datasheet for the L293D chip: https://www.ti.com/product/L293D. Draw a schematic using at least your arduino, this chip, and two motors. Write (pseudo) code that shows how you would move the motors both forward, both back, then one forward one back, and one back then forward.</h3>
+      <img src="a5_vt2.jpg" width="800" />
+      <pre><code>
+        // Pseudo code for controlling two motors using L293D chip
+        // Define motor control pins
+        int motor1Pin1 = 2; // Motor 1 forward
+        int motor1Pin2 = 3; // Motor 1 backward
+        int motor2Pin1 = 4; // Motor 2 forward
+        int motor2Pin2 = 5; // Motor 2 backward
+
+        void setup() {
+          // Set all motor control pins as outputs
+          pinMode(motor1Pin1, OUTPUT);
+          pinMode(motor1Pin2, OUTPUT);
+          pinMode(motor2Pin1, OUTPUT);
+          pinMode(motor2Pin2, OUTPUT);
+        }
+
+        void loop() {
+          // Move both motors forward
+          digitalWrite(motor1Pin1, HIGH);
+          digitalWrite(motor1Pin2, LOW);
+          digitalWrite(motor2Pin1, HIGH);
+          digitalWrite(motor2Pin2, LOW);
+          delay(1000); // Run for 1 second
+
+          // Move both motors backward
+          digitalWrite(motor1Pin1, LOW);
+          digitalWrite(motor1Pin2, HIGH);
+          digitalWrite(motor2Pin1, LOW);
+          digitalWrite(motor2Pin2, HIGH);
+          delay(1000); // Run for 1 second
+
+          // Move motor 1 forward and motor 2 backward
+          digitalWrite(motor1Pin1, HIGH);
+          digitalWrite(motor1Pin2, LOW);
+          digitalWrite(motor2Pin1, LOW);
+          digitalWrite(motor2Pin2, HIGH);
+          delay(1000); // Run for 1 second
+
+          // Move motor 1 backward and motor 2 forward
+          digitalWrite(motor1Pin1, LOW);
+          digitalWrite(motor1Pin2, HIGH);
+          digitalWrite(motor2Pin1, HIGH);
+          digitalWrite(motor2Pin2, LOW);
+          delay(1000); // Run for 1 second
+        }
+      </code></pre>
+      <br>
+      <h3>Q4: Did you use AI tools in completing this assignment? If yes, please provide details on how/when, as well as a brief reflection. If you used an LLM, please 'share' your conversation and include it as part of your submission, or cite the prompt(s) you used and the output. If no, you can either leave this question blank, or provide other information if you'd like.</h3>
+      <p>
+        I used DeepSeek AI to help me check my understanding of the questions and to provide some suggestions for my answers. I found it helpful to clarify my thoughts and ensure that I was on the right track. The conversation can be accessed 
+        <a href="https://chat.deepseek.com/share/v8jhqqxplxuoez46qm" target="_blank">here.</a>
+      </p>
+      <br>
+    </div>
+  </body>
+</html>
