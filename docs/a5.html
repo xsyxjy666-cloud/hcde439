@@ -22,7 +22,7 @@
         <p>*<i>The 12V power supply ground, the MOSFET Source, and the Arduino GND are all connected together (Common Ground) to ensure the control signal works properly.</i></p>
         
         <ul>
-          <li><b>Expected Voltages (LED Strip):</b> The MOSFET acts as a switch. When Pin 9 outputs a PWM signal, the MOSFET's Gate opens, the MOSFET rapidly switches on and off, controlling the average voltage across the LED strip from 0V to 12V.</li>
+          <li><b>Expected Voltages (LED Strip):</b> The MOSFET acts as a switch. When the MOSFET is fully on, the voltage drop across D and S is nearly 0V, so almost all 12V is applied across the LED strip.</li>
           <li><b>Expected Currents (LED Strip):</b> The LED light strip draws about 1.5A at maximum brightness. The MOSFET has a maximum drain current of 47A, which is more than sufficient for the LED strip's requirements. Because MOSFET is voltage-controlled, the Gate draws almost 0mA, so the Arduino pin 9 is safe.</li>
         </ul>
         <p>*<i>
@@ -33,8 +33,8 @@
         </i></p>
 
         <ul>
-          <li><b>Expected Voltages (Capacitive Sensor):</b> When the conductor is not touched, the sensor outputs 0V. When touched, the voltage increases from 0V up to 5V. The voltage decreases when the conductor is released.</li>
-          <li><b>Expected Currents (Capacitive Sensor):</b> The capacitive sensor draws a very small amount of current. The 1MΩ resistor limits the current to a safe level for the Arduino pin.</li>
+          <li><b>Expected Voltages (Capacitive Sensor):</b> Pin 2 constantly sends 5V pulses. When the conductor is not touched, the voltage at the receive pin stays low near 0V. When touched, the human body creates a capacitance, which causes the voltage jump from 0V up to 5V. The voltage decreases back to baseline when the conductor is released.</li>
+          <li><b>Expected Currents (Capacitive Sensor):</b> The capacitive sensor draws a very small amount of current. The 1MΩ resistor limits the current to a safe level for the Arduino pin. (I = V/R = 5V/1MΩ = 0.005mA) </li>
         </ul>
     </div>
     <br>
@@ -199,7 +199,7 @@
       <br>
       <h3>Q4: Did you use AI tools in completing this assignment? If yes, please provide details on how/when, as well as a brief reflection. If you used an LLM, please 'share' your conversation and include it as part of your submission, or cite the prompt(s) you used and the output. If no, you can either leave this question blank, or provide other information if you'd like.</h3>
       <p>
-        I used DeepSeek AI to help me check my understanding of the questions and to provide some suggestions for my answers. I found it helpful to clarify my thoughts and ensure that I was on the right track. The conversation can be accessed 
+        I used DeepSeek AI to help me check my understanding of the questions, understand the concepts, and to provide some suggestions for my answers. I found it helpful to clarify my thoughts and provide guidance. The conversation can be accessed 
         <a href="https://chat.deepseek.com/share/v8jhqqxplxuoez46qm" target="_blank">here.</a>
       </p>
       <br>
