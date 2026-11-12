@@ -31,7 +31,6 @@
           I asked the AI about this discrepancy to confirm if the slide was correct. The AI explained that MOSFETs are voltage-controlled and draw almost no steady current at the gate, which is why the resistor is often omitted in demos, but adding one is safer in practice to prevent transient current spikes. 
           Since the lecture slides did not include it, I decided to follow the slide's schematic exactly, but I used this conversation to deepen my understanding of the difference between current-controlled and voltage-controlled components.
         </i></p>
-
         <ul>
           <li><b>Expected Voltages (Capacitive Sensor):</b> Pin 2 constantly sends 5V pulses. When the conductor is not touched, the voltage at the receive pin stays low near 0V. When touched, the human body creates a capacitance, which causes the voltage jump from 0V up to 5V. The voltage decreases back to baseline when the conductor is released.</li>
           <li><b>Expected Currents (Capacitive Sensor):</b> The capacitive sensor draws a very small amount of current. The 1MΩ resistor limits the current to a safe level for the Arduino pin. (I = V/R = 5V/1MΩ = 0.005mA) </li>
